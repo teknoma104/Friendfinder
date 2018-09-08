@@ -5,16 +5,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B"
-        crossorigin="anonymous">
-    <link rel="stylesheet" href="../public/CSS/style.css">
+    <title>Friend Finder Survey</title>
+
+    <link rel="stylesheet" href="/assets/css/style.css" type="text/css" >
     <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
         crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B"
+        crossorigin="anonymous">
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/js/bootstrap.min.js" integrity="sha384-o+RDsa0aLu++PJvFqy8fFScvbHFLtbvScb8AjopnFD+iEQ7wo/CG0xlczd+2O/em"
         crossorigin="anonymous"></script>
 
 
-    <title>Friend Finder Survey</title>
 </head>
 
 <body>
@@ -36,9 +37,9 @@
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label for="inputEmail" class="col-sm-2 col-form-label">Email (Required)</label>
+                        <label for="inputPictureURL" class="col-sm-2 col-form-label">Picture URL (Required)</label>
                         <div class="col-sm-10">
-                            <input type="email" class="form-control" id="inputEmail" placeholder="Email" required>
+                            <input type="text" class="form-control" id="inputPictureURL" placeholder="Picture" required>
                         </div>
                     </div>
 
@@ -463,14 +464,14 @@
         <div class="modal-content">
             <div class="modal-header">
                 <span class="close">&times;</span>
-                <h2>Modal Header</h2>
+                <h2>Meet your new BFF</h2>
             </div>
             <div class="modal-body">
-                <p>Some text in the Modal Body</p>
-                <p>Some other text...</p>
+                <h2 id="bffName"></h2>
+                <img id="bffIMG" src="">
             </div>
             <div class="modal-footer">
-                <h3>Modal Footer</h3>
+                <h2>Enjoy your new BFF!</h2>
             </div>
         </div>
 
@@ -481,6 +482,9 @@
 </html>
 
 <script type="text/javascript">
+
+    var modal = $("#myModal");
+    var span = $(".close")[0];
 
     // In this code below we create the Front-end JavaScript which "POSTS" our form data to our express server.
     // In essence, when the user hits submit, jQuery grabs all of the fields then sends a post request to our api
@@ -521,7 +525,7 @@
         if (validateForm()) {
             var newSurveyTaker = {
                 Name: $("#inputNameBox").val().trim(),
-                Email: $("#inputEmail").val().trim(),
+                PicURL: $("#inputPictureURL").val().trim(),
                 Scores: [
                     $('input:radio[name="question1Radios"]:checked').val(),
                     $('input:radio[name="question2Radios"]:checked').val(),
@@ -535,34 +539,59 @@
                     $('input:radio[name="question10Radios"]:checked').val()
                 ]
             };
+            console.log("newSurveyTaker data below:");
             console.log(newSurveyTaker);
 
             // This line is the magic. It"s very similar to the standard ajax function we used.
             // Essentially we give it a URL, we give it the object we want to send, then we have a "callback".
             // The callback is the response of the server. 
-            $.post("/api/friends", newSurveyTaker,
-                function (data) {
+            $.post("/api/friends", newSurveyTaker, function (data) {
+                console.log("doing post to server");
 
-                    // Clear the form when submitting
-                    $("#inputNameBox").val("");
-                    $("#inputEmail").val("");
-                    $("question1Radios").attr('checked', false);
-                    $("question2Radios").attr('checked', false);
-                    $("question3Radios").attr('checked', false);
-                    $("question4Radios").attr('checked', false);
-                    $("question5Radios").attr('checked', false);
-                    $("question6Radios").attr('checked', false);
-                    $("question7Radios").attr('checked', false);
-                    $("question8Radios").attr('checked', false);
-                    $("question9Radios").attr('checked', false);
-                    $("question10Radios").attr('checked', false);
+                // Clear the form when submitting
+                $("#inputNameBox").val("");
+                $("#inputPictureURL").val("");
 
-                });
+                $('input[name="question1Radios"]').prop("checked", false);
+                $('input[name="question2Radios"]').prop("checked", false);
+                $('input[name="question3Radios"]').prop("checked", false);
+                $('input[name="question4Radios"]').prop("checked", false);
+                $('input[name="question5Radios"]').prop("checked", false);
+                $('input[name="question6Radios"]').prop("checked", false);
+                $('input[name="question7Radios"]').prop("checked", false);
+                $('input[name="question8Radios"]').prop("checked", false);
+                $('input[name="question9Radios"]').prop("checked", false);
+                $('input[name="question10Radios"]').prop("checked", false);
+
+                modal.css("display", "block");
+
+                // Grab the result from the AJAX post so that the best match's name and photo are displayed.
+                console.log("testing data received back from server");
+                console.log(data);
+                console.log("testing data.Name:  " + data.Name);
+                console.log("testing data.Name:  " + data.PicURL);
+                $("#bffName").text(data.Name);
+                $("#bffIMG").attr({ src: data.PicURL, height: "150px" });
+
+            });
         }
         else {
             alert("Please fill out all fields before submitting!");
         }
 
     });
+
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function () {
+        modal.css("display", "none");
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function (event) {
+        if (event.target == modal) {
+            modal.css("display", "none");
+        }
+    }
 
 </script>
